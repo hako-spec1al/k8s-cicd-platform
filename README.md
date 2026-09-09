@@ -1,27 +1,31 @@
 # Production-like Kubernetes CI/CD Platform
 
+[![CI](https://github.com/hako-spec1al/k8s-cicd-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/hako-spec1al/k8s-cicd-platform/actions/workflows/ci.yml)
+
 ## Project overview
 
-This phase focuses only on packaging the Phase 1 API as a Docker image and running it locally. CI/CD, Kubernetes, Helm, and monitoring will be added in later phases.
+Small FastAPI service used to demonstrate a production-like delivery path:
 
-### Included
+`code -> tests -> Docker image -> Kubernetes -> observability`
+
+Current architecture:
 
 - FastAPI API with `/health`, `/ready`, and `/version`
-- `APP_VERSION` configuration through an environment variable
-- Unit tests with pytest
-- Local development instructions
+- Docker runtime with a non-root `appuser`
+- GitHub Actions CI for pull requests and pushes to `main`
+- Kubernetes manifests for local deployment with probes, resources, and rolling updates
 
-## Phase 2: Dockerize
+## Phase 1: API foundation
 
-The image runs the API as a non-root user and exposes port `8000`.
+- Added the REST endpoints `/health`, `/ready`, and `/version`.
+- Added `APP_VERSION` runtime configuration.
+- Added pytest unit tests.
 
-### Verified locally
+## Phase 2: Dockerization
 
-- Image `k8s-cicd-platform:v0.2.0` builds successfully.
-- Container runs with user `appuser`.
-- `/health` returns `{"status":"ok"}`.
-- `/ready` returns `{"status":"ready"}`.
-- `/version` returns `{"version":"v0.2.0"}` when configured with `APP_VERSION=v0.2.0`.
+- Built image `k8s-cicd-platform:v0.2.0` successfully.
+- Runs as non-root user `appuser` and exposes port `8000`.
+- Verified all API endpoints through the published container port.
 
 Build the image:
 
@@ -43,6 +47,12 @@ Invoke-RestMethod http://localhost:8000/ready
 Invoke-RestMethod http://localhost:8000/version
 ```
 
+## Phase 3: CI
+
+- Added GitHub Actions workflow for pull requests and pushes to `main`.
+- Dependency installation and pytest run successfully in CI.
+- Evidence: CI completed with `3 passed`; release tag `v0.3.0` was created on `main`.
+
 ## Run locally
 
 ```powershell
@@ -55,14 +65,11 @@ uvicorn app.main:app --reload
 
 Open `http://localhost:8000/docs` for the API documentation.
 
-## Phase 2 checklist
+## Verification evidence
 
-- [x] Docker image builds successfully.
-- [x] Container starts successfully.
-- [x] API endpoints work through the published port.
-- [x] Container runs as a non-root user.
-- [x] `APP_VERSION` is configurable at runtime.
-
-## Next phase
-
-Phase 3 will add GitHub Actions CI. It should begin only after the Phase 2 checklist is complete and committed.
+- [x] Phase 1 tests: `3 passed`.
+      ![alt text](images/pytest_result.png)
+- [x] Phase 2 image: `k8s-cicd-platform:v0.2.0`.
+      ![alt text](images/docker_image.png)
+- [x] Phase 3 CI: `3 passed`, released as `v0.3.0`.
+      ![alt text](images/phase3_CI.png)

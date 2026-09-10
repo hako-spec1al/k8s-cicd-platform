@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: platform-api
+    namespace: platform
+    labels:
+        app.kubernetes.io/name: platform-api
+        app.kubernetes.io/part-of: k8s-cicd-platform
+spec:
+    ingressClassName: traefik
+    rules:
+        - host: platform.local
+          http:
+              paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                        service:
+                            name: platform-api
+                            port:
+                                name: http

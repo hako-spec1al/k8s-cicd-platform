@@ -1,0 +1,14 @@
+replicaCount: 2
+
+appVersion: v0.4.0-staging
+
+ingress:
+    host: platform-staging.local
+
+resources:
+    requests:
+        cpu: 200m
+        memory: 256Mi
+    limits:
+        cpu: 1
+        memory: 512Mi

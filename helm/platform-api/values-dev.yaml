@@ -1,0 +1,6 @@
+replicaCount: 1
+
+appVersion: v0.4.0-dev
+
+ingress:
+    host: platform-dev.local

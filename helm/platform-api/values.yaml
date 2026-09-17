@@ -1,0 +1,36 @@
+replicaCount: 2
+
+image:
+    repository: k8s-cicd-platform
+    tag: v0.4.0
+    pullPolicy: IfNotPresent
+
+appVersion: v0.4.0
+
+service:
+    type: ClusterIP
+    port: 8000
+    targetPort: http
+
+ingress:
+    enabled: true
+    className: traefik
+    host: platform.local
+
+resources:
+    requests:
+        cpu: 100m
+        memory: 128Mi
+    limits:
+        cpu: 500m
+        memory: 256Mi
+
+rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false

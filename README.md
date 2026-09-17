@@ -139,6 +139,10 @@ The local cluster can be removed after verification:
 k3d cluster delete platform
 ```
 
+## Documentation
+
+- [Phase 5: Helm Chart Standardization](docs/phase-5-helm.md)
+
 ## Run locally
 
 ```powershell

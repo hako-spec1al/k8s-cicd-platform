@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+    name: platform-api-dev
+    namespace: argocd
+spec:
+    project: default
+    source:
+        repoURL: https://github.com/hako-spec1al/k8s-cicd-platform.git
+        targetRevision: main
+        path: helm/platform-api
+        helm:
+            valueFiles:
+                - values-dev.yaml
+    destination:
+        server: https://kubernetes.default.svc
+        namespace: platform-dev
+    syncPolicy:
+        automated:
+            prune: true
+            selfHeal: true
+        syncOptions:
+            - CreateNamespace=true

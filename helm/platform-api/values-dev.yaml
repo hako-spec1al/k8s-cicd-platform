@@ -2,5 +2,10 @@ replicaCount: 1
 
 appVersion: v0.4.0-dev
 
+image:
+    repository: ghcr.io/hako-spec1al/k8s-cicd-platform
+    tag: v0.4.0
+
+#keep override
 ingress:
     host: platform-dev.local

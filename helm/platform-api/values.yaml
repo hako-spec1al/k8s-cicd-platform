@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-    repository: k8s-cicd-platform
+    repository: ghcr.io/hako-spec1al/k8s-cicd-platform
     tag: v0.4.0
     pullPolicy: IfNotPresent
 

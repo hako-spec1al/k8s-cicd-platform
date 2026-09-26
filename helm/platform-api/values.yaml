@@ -34,3 +34,11 @@ securityContext:
     runAsUser: 1000
     readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
+
+monitoring:
+    enabled: true
+    serviceMonitor:
+        interval: 15s
+        path: /metrics
+    alerts:
+        enabled: true

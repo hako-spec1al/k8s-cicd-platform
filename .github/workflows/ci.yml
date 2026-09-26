@@ -94,10 +94,10 @@ jobs:
             - name: Checkout source
               uses: actions/checkout@v4
 
-            - name: Install yq
-              uses: dcarbone/install-yq-action@v1.1.1
-              with:
-                  yq-version: "v4.44.3"
+            # - name: Install yq
+            #   uses: dcarbone/install-yq-action@v1.1.1
+            #   with:
+            #       version: "v4.44.3"
 
             - name: Update Helm values
               env:

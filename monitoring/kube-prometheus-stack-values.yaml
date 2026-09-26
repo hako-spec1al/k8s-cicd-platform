@@ -1,0 +1,81 @@
+defaultRules:
+    create: false
+
+grafana:
+    enabled: true
+    persistence:
+        enabled: false
+    resources:
+        requests:
+            cpu: 25m
+            memory: 128Mi
+        limits:
+            cpu: 200m
+            memory: 512Mi
+    livenessProbe:
+        initialDelaySeconds: 180
+        timeoutSeconds: 10
+        failureThreshold: 6
+
+alertmanager:
+    enabled: true
+    alertmanagerSpec:
+        replicas: 1
+        resources:
+            requests:
+                cpu: 25m
+                memory: 64Mi
+            limits:
+                cpu: 100m
+                memory: 128Mi
+
+prometheusOperator:
+    resources:
+        requests:
+            cpu: 25m
+            memory: 64Mi
+        limits:
+            cpu: 200m
+            memory: 256Mi
+
+kubeStateMetrics:
+    enabled: true
+    resources:
+        requests:
+            cpu: 25m
+            memory: 64Mi
+        limits:
+            cpu: 100m
+            memory: 128Mi
+
+prometheus-node-exporter:
+    resources:
+        requests:
+            cpu: 10m
+            memory: 32Mi
+        limits:
+            cpu: 100m
+            memory: 64Mi
+
+prometheus:
+    enabled: true
+    prometheusSpec:
+        replicas: 1
+        retention: 1d
+        retentionSize: 1GB
+        scrapeInterval: 30s
+        evaluationInterval: 30s
+        walCompression: true
+        resources:
+            requests:
+                cpu: 100m
+                memory: 256Mi
+            limits:
+                cpu: 500m
+                memory: 768Mi
+        storageSpec:
+            emptyDir: {}
+    livenessProbe:
+        initialDelaySeconds: 120
+        timeoutSeconds: 5
+        failureThreshold: 6

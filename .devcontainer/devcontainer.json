@@ -1,0 +1,44 @@
+{
+    "name": "k8s-cicd-platform",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "hostRequirements": {
+        "cpus": 4,
+        "memory": "8gb",
+        "storage": "32gb"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:4": {
+            "moby": true,
+            "installDockerBuildx": true
+        },
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+            "version": "latest",
+            "helm": "latest",
+            "minikube": "none"
+        }
+    },
+    "forwardPorts": [80, 8000, 8082, 3000],
+    "portsAttributes": {
+        "80": {
+            "label": "Platform API ingress",
+            "protocol": "http",
+            "onAutoForward": "notify"
+        },
+        "8000": {
+            "label": "Platform API",
+            "protocol": "http",
+            "onAutoForward": "openBrowser"
+        },
+        "8082": {
+            "label": "Argo CD",
+            "protocol": "https",
+            "onAutoForward": "openBrowser"
+        },
+        "3000": {
+            "label": "Grafana",
+            "protocol": "http",
+            "onAutoForward": "openBrowser"
+        }
+    },
+    "postCreateCommand": "bash ./setup-codespaces.sh"
+}

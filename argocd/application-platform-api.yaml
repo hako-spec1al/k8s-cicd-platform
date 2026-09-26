@@ -7,7 +7,7 @@ spec:
     project: default
     source:
         repoURL: https://github.com/hako-spec1al/k8s-cicd-platform.git
-        targetRevision: main
+        targetRevision: phase-8-observability
         path: helm/platform-api
         helm:
             valueFiles:

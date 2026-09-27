@@ -57,8 +57,7 @@ kubectl -n argocd rollout status deployment/argocd-repo-server --timeout=300s
 kubectl wait --for=condition=Established \
   crd/applications.argoproj.io --timeout=180s
 
-kubectl apply -f argocd/application-platform-api.yaml
-
+# 1. CÀI ĐẶT MONITORING TRƯỚC (Để tạo các CRD như ServiceMonitor, PrometheusRule)
 helm repo add prometheus-community \
   https://prometheus-community.github.io/helm-charts
 helm repo update
@@ -70,6 +69,9 @@ helm upgrade --install monitoring \
   --values monitoring/kube-prometheus-stack-values.yaml \
   --wait \
   --timeout 10m
+
+# 2. SAU ĐÓ MỚI APPLY ARGO CD APPLICATION
+kubectl apply -f argocd/application-platform-api.yaml
 
 echo "Bootstrap complete."
 kubectl get nodes

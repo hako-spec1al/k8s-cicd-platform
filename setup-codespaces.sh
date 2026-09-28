@@ -6,6 +6,16 @@ command -v sudo >/dev/null
 command -v kubectl >/dev/null
 command -v helm >/dev/null
 
+if [[ "${EUID}" -eq 0 ]]; then
+  echo "Run this script as the Codespaces user, not with sudo." >&2
+  exit 1
+fi
+
+export KUBECONFIG="${KUBECONFIG:-${HOME}/.kube/config}"
+mkdir -p "$(dirname "$KUBECONFIG")"
+
+K3D_API_PORT="${K3D_API_PORT:-6443}"
+
 case "$(uname -m)" in
   x86_64) ARCH="amd64" ;;
   aarch64|arm64) ARCH="arm64" ;;
@@ -34,22 +44,32 @@ fi
 
 docker info >/dev/null
 
-# This deliberately recreates the dedicated Codespaces cluster.
-k3d cluster delete platform >/dev/null 2>&1 || true
+# Recreate the dedicated Codespaces cluster from a clean state.
+k3d cluster delete platform || true
 
 k3d cluster create platform \
   --servers 1 \
   --agents 1 \
+  --api-port "127.0.0.1:${K3D_API_PORT}" \
+  -p "80:80@loadbalancer" \
   --wait \
-  -p "80:80@loadbalancer" 
+  --timeout 180s
 
+k3d kubeconfig merge platform \
+  --kubeconfig-switch-context \
+  --output "$KUBECONFIG"
+chmod 600 "$KUBECONFIG"
 kubectl config use-context k3d-platform
+kubectl config set-cluster k3d-platform \
+  --server="https://127.0.0.1:${K3D_API_PORT}"
+kubectl get nodes
 kubectl wait --for=condition=Ready nodes --all --timeout=180s
+kubectl get nodes
 
 kubectl create namespace argocd \
   --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl apply -n argocd \
+kubectl apply --server-side --force-conflicts -n argocd \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 kubectl -n argocd rollout status deployment/argocd-server --timeout=300s
@@ -59,7 +79,8 @@ kubectl wait --for=condition=Established \
 
 # 1. CÀI ĐẶT MONITORING TRƯỚC (Để tạo các CRD như ServiceMonitor, PrometheusRule)
 helm repo add prometheus-community \
-  https://prometheus-community.github.io/helm-charts
+  https://prometheus-community.github.io/helm-charts \
+  --force-update
 helm repo update
 
 helm upgrade --install monitoring \

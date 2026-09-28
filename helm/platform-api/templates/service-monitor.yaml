@@ -3,13 +3,15 @@ kind: ServiceMonitor
 metadata:
   name: platform-api
   namespace: monitoring
+  labels:
+    release: monitoring
 spec:
   selector:
     matchLabels:
-      app: platform-api
+      app.kubernetes.io/name: platform-api
   namespaceSelector:
     matchNames:
-      - platform
+      - platform-dev
   endpoints:
     - port: http
       path: /metrics

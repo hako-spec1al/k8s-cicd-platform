@@ -2,7 +2,9 @@ name: CI
 
 on:
     push:
-        branches: [main]
+        branches: [main, phase-8-observability]
+        paths-ignore:
+            - helm/platform-api/values-dev.yaml
     pull_request:
 
 #or use this (still the same)
@@ -38,7 +40,7 @@ jobs:
     build-and-push:
         name: Build and push image
         needs: test
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push'
         runs-on: ubuntu-latest
 
         permissions:
@@ -94,10 +96,10 @@ jobs:
             - name: Checkout source
               uses: actions/checkout@v4
 
-            # - name: Install yq
-            #   uses: dcarbone/install-yq-action@v1.1.1
-            #   with:
-            #       version: "v4.44.3"
+            - name: Install yq
+              uses: dcarbone/install-yq-action@v1.1.1
+              with:
+                  version: "v4.44.3"
 
             - name: Update Helm values
               env:
@@ -111,16 +113,16 @@ jobs:
               uses: peter-evans/create-pull-request@v7
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
-                  branch: automation/update-platform-api-image
+                  branch: automation/update-platform-api-image-${{ github.ref_name }}
                   delete-branch: true
-                  base: main
+                  base: ${{ github.ref_name }}
                   title: "chore: update platform api image"
                   commit-message: "chore: update platform api image to ${{ github.sha }}"
                   body: |
                       Updates the platform API image to:
                         ghcr.io/hako-spec1al/k8s-cicd-platform:sha-${{ github.sha }}
 
-                        Argo CD will deploy this version after the pull request is merged.
+                        Merge this pull request into ${{ github.ref_name }} to deploy it with Argo CD.
                   labels: |
                       deployment
                       automated

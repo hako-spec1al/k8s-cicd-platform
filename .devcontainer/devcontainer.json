@@ -17,7 +17,7 @@
             "minikube": "none"
         }
     },
-    "forwardPorts": [80, 8000, 8082, 3000],
+    "forwardPorts": [80, 8000, 8082, 3000, 9090],
     "portsAttributes": {
         "80": {
             "label": "Platform API ingress",
@@ -36,6 +36,11 @@
         },
         "3000": {
             "label": "Grafana",
+            "protocol": "http",
+            "onAutoForward": "openBrowser"
+        },
+        "9090": {
+            "label": "Prometheus",
             "protocol": "http",
             "onAutoForward": "openBrowser"
         }

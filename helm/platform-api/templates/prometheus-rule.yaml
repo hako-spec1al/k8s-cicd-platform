@@ -3,6 +3,9 @@ kind: PrometheusRule
 metadata:
   name: platform-api-alerts
   namespace: monitoring
+  labels: 
+    release: monitoring
+    app.kubernetes.io/name: platform-api
 spec:
   groups:
     - name: platform-api.rules

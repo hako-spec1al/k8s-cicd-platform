@@ -91,6 +91,14 @@ helm upgrade --install monitoring \
   --wait \
   --timeout 10m
 
+# Provision the version-controlled dashboard through the Grafana sidecar.
+kubectl create configmap platform-api-dashboard \
+  --namespace monitoring \
+  --from-file=dashboard.json=monitoring/dashboard/dashboard.json \
+  --dry-run=client -o yaml | kubectl apply -f -
+kubectl label configmap platform-api-dashboard \
+  --namespace monitoring grafana_dashboard=1 --overwrite
+
 # 2. SAU ĐÓ MỚI APPLY ARGO CD APPLICATION
 kubectl apply -f argocd/application-platform-api.yaml
 

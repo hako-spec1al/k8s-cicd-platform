@@ -12,7 +12,13 @@
             "isBackground": true,
             "problemMatcher": {
                 "owner": "port-forward",
-                "pattern": [{ "regexp": "^error: (.*)$", "message": 1 }],
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": "^Forwarding from ",
@@ -31,7 +37,13 @@
             "isBackground": true,
             "problemMatcher": {
                 "owner": "port-forward",
-                "pattern": [{ "regexp": "^error: (.*)$", "message": 1 }],
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": "^Forwarding from ",
@@ -50,7 +62,13 @@
             "isBackground": true,
             "problemMatcher": {
                 "owner": "port-forward",
-                "pattern": [{ "regexp": "^error: (.*)$", "message": 1 }],
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": "^Forwarding from ",
@@ -69,7 +87,13 @@
             "isBackground": true,
             "problemMatcher": {
                 "owner": "port-forward",
-                "pattern": [{ "regexp": "^error: (.*)$", "message": 1 }],
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": "^Forwarding from ",

@@ -39,6 +39,21 @@ kubectl -n monitoring port-forward --address 0.0.0.0 svc/monitoring-grafana 3000
 
 The Grafana Service name may vary by Helm release; confirm it with `kubectl -n monitoring get svc`. Open port `3000` in Codespaces or browse to `http://127.0.0.1:3000` locally.
 
+### Provision or refresh the Platform API dashboard
+
+Grafana loads labeled dashboard ConfigMaps from the `monitoring` namespace. Run these commands from the repository root after changing `monitoring/dashboard/dashboard.json`:
+
+```bash
+kubectl create configmap platform-api-dashboard \
+  --namespace monitoring \
+  --from-file=dashboard.json=monitoring/dashboard/dashboard.json \
+  --dry-run=client -o yaml | kubectl apply -f -
+kubectl label configmap platform-api-dashboard \
+  --namespace monitoring grafana_dashboard=1 --overwrite
+```
+
+The Grafana dashboard sidecar detects the ConfigMap and provisions the dashboard. Do not rerun `setup-codespaces.sh` just to refresh the dashboard; that script recreates the k3d cluster.
+
 ## Argo CD UI
 
 ```bash
@@ -75,3 +90,21 @@ kubectl top pods -A
 ```
 
 `kubectl top` requires Metrics Server to be available. If metrics are unavailable on k3d, use `kubectl describe`, events, and restart counts as additional diagnostic evidence.
+
+
+## Get password
+
+for ArgoCD:
+
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath='{.data.password}' | base64 --decode
+printf '\n'
+```
+for Grafana:
+
+```bash
+kubectl -n monitoring get secret monitoring-grafana \
+  -o jsonpath='{.data.admin-password}' | base64 --decode
+printf '\n'
+```

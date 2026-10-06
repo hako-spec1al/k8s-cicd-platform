@@ -3,6 +3,12 @@ defaultRules:
 
 grafana:
     enabled: true
+    sidecar:
+        dashboards:
+            enabled: true
+            label: grafana_dashboard
+            labelValue: "1"
+            searchNamespace: monitoring
     persistence:
         enabled: false
     resources:

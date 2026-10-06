@@ -7,15 +7,15 @@ Connect successful image builds to deployment configuration changes while retain
 ## Implemented Workflow
 
 1. Pull requests run the test suite.
-2. A push to `main` that passes tests builds and pushes a SHA-tagged image to GHCR.
+2. Pushes to `main` and `phase-8-observability` that pass tests build and push a SHA-tagged image to GHCR. Pushes that only update `helm/platform-api/values-dev.yaml` are ignored to prevent a deployment-PR loop.
 3. The workflow uses `yq` to update `image.tag` and `appVersion` in `helm/platform-api/values-dev.yaml`.
-4. GitHub Actions opens a deployment PR against `main`; after it is merged, Argo CD reconciles the chart.
+4. GitHub Actions opens a deployment PR against the branch that triggered the build. Merge that PR into the branch Argo CD currently tracks to deploy the new image.
 
 The workflow uses `GITHUB_TOKEN` through GitHub Actions permissions rather than storing a token in YAML. The project identifies tag `v0.7.0` as the Phase 7 milestone.
 
-## Current Configuration Note
+## Branch Strategy
 
-The Argo CD Application on the active branch targets `phase-8-observability`, while the deployment PR workflow targets `main`. Align the Argo CD target branch with the PR base before relying on the post-merge end-to-end deployment flow.
+During Phase 8 verification, the Argo CD Application tracks `phase-8-observability`, so image-update PRs from that branch target it too. When Phase 8 is merged into `main` and `main` becomes the deployment source of truth, update the Application's `targetRevision` to `main` through Git.
 
 ## Related Files
 

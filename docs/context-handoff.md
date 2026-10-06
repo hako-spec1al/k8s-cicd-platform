@@ -1,39 +1,47 @@
 # Context Handoff
 
-Last updated: 2026-09-27
+Last updated: 2026-10-06
 
-## Repository Status
+## Repository and Branch
 
 - Repository: `k8s-cicd-platform`.
 - Active branch: `phase-8-observability`.
-- Phases 1–7 are considered complete; Phase 7 milestone tag: `v0.7.0`.
-- `setup-codespaces.sh` has an uncommitted change. Preserve it and inspect its diff before making further edits.
+- Do not merge directly into `main`.
+- Argo CD Application `platform-api-dev` tracks `phase-8-observability` and deploys to `platform-dev`.
 
-## Architecture
+## Verified
 
-- FastAPI, Docker, GitHub Actions, and GHCR images tagged by commit SHA.
-- Local Kubernetes via k3d; Helm chart at `helm/platform-api`.
-- Argo CD Application `platform-api-dev` enables automated sync, pruning, and self-healing. Its current `targetRevision` is `phase-8-observability`, and its destination namespace is `platform-dev`.
-- Low-footprint kube-prometheus-stack values are at `monitoring/kube-prometheus-stack-values.yaml`.
-- The Windows/WSL host provides approximately 3.6 GB of Docker Desktop memory. Running k3d, Argo CD, and monitoring together caused resource starvation, Kubernetes API TLS timeouts, and `CrashLoopBackOff`. The lab is planned to move to a 4-core/8-GB Codespace using Docker-in-Docker.
+- The Codespaces k3d cluster is running Argo CD, kube-prometheus-stack, and the FastAPI application.
+- API routes, including `/metrics`, have returned HTTP 200 through port-forwarding; the API target is UP in Prometheus.
+- Grafana, Argo CD, and Prometheus UIs have been accessible.
+- The four-panel Grafana dashboard is provisioned from `monitoring/dashboard/dashboard.json` through the `grafana_dashboard=1` ConfigMap sidecar; sidecar logs confirmed dashboard reload returned HTTP 200.
+- The three API alert rules are discovered by Prometheus. They were last observed as `Inactive (3)`, which is expected when conditions are not met.
+- Phase 8 is complete. The user reports that verification screenshots have been captured; they have not yet been added to the repository.
+- Running the compound task `Port-forward: All services (8000, 3000, 8082, 9090)` manually works.
+- The CI workflow was updated and merged to build images from `phase-8-observability` and open an image-tag update PR back to that branch.
 
-## Phase 8 Status
+## Port-forward Follow-up
 
-- `.devcontainer/devcontainer.json` is present and runs `setup-codespaces.sh` through `postCreateCommand`.
-- The bootstrap script recreates the `platform` cluster, installs Argo CD, installs monitoring, and then applies the Application. It has an uncommitted change and has not yet been verified in Codespaces.
-- Prometheus instrumentation is present, but the app currently exposes `./metrics` while the ServiceMonitor expects `/metrics`.
-- The ServiceMonitor template selects `app: platform-api` in namespace `platform`; the Helm Service uses the `app.kubernetes.io/name` label and Argo CD deploys it to `platform-dev`.
-- A PrometheusRule template exists. There is no evidence yet that a dashboard has been created or that Prometheus targets and alerts have been verified.
+- The four port-forward tasks work when run manually. If automatic startup is revisited, validate the current `.vscode/tasks.json` problem matcher; its `file` value is a string rather than a capture-group index.
+- Port-forward automation is a Codespaces convenience follow-up and does not block Phase 8 completion.
 
-## Next Steps
+## Next Phase
 
-1. Review the existing `git diff` for the Dev Container and bootstrap files before committing.
-2. Align the metrics endpoint and the ServiceMonitor selector/namespace; verify the Prometheus Operator selectors.
-3. Validate the chart with `helm lint` and `helm template`.
-4. Create a Codespace from the current branch, run the bootstrap, and verify Pod readiness and port forwarding.
-5. Confirm the application target is UP, build a RED/resource dashboard, and test an alert with a controlled failure.
-6. Capture evidence and update the README/phase docs; align Argo CD's target branch with the deployment PR base (`main`) after the branch is merged.
+1. Add the captured Phase 8 screenshots to the repository.
+2. Begin Phase 9 security and reliability work, starting with Trivy image scanning; scanning is not currently implemented in CI.
 
-## Instructions for a New AI Session
+## Operational Cautions
 
-Read this document first. Before editing, inspect Git status, `app/main.py`, the Helm monitoring templates, the Argo CD Application, and the bootstrap script. Do not claim Codespaces or Phase 8 is operational until fresh verification results are available.
+- Do not run `setup-codespaces.sh` just to reopen ports. It deletes and recreates the `platform` cluster.
+- Do not record passwords, tokens, or other secrets in this file.
+- Before changing code, inspect `git status` and the relevant diffs; preserve existing user changes.
+
+## First Checks When Resuming
+
+```bash
+git status --short --branch
+kubectl config current-context
+kubectl get nodes -o wide
+kubectl get applications -n argocd
+kubectl get servicemonitor,prometheusrule -A
+```

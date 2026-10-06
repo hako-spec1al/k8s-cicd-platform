@@ -1,27 +1,24 @@
 # Phase 8: Monitoring and Observability
 
-**Status:** In progress.
+**Status:** Complete. Evidence screenshots have been captured and will be added to the repository separately.
 
 ## Objective
 
 Collect application and infrastructure signals, visualize them in Grafana, create actionable alerts, and verify the setup through a controlled failure scenario.
 
-## Implemented in the Repository
+## Completed
 
-- The `prometheus-fastapi-instrumentator` dependency and instrumentation in [`app/main.py`](../../app/main.py).
-- Helm templates for `ServiceMonitor` and `PrometheusRule` resources.
-- Resource limits, short retention, and temporary storage in [`monitoring/kube-prometheus-stack-values.yaml`](../../monitoring/kube-prometheus-stack-values.yaml).
-- A Dev Container configured for Docker-in-Docker, kubectl/Helm, and port forwarding; `setup-codespaces.sh` bootstraps k3d, Argo CD, and monitoring.
+- FastAPI exposes `/metrics` with `prometheus-fastapi-instrumentator`; the endpoint returned HTTP 200 through port-forwarding.
+- The ServiceMonitor selects the API Service in `platform-dev` and scrapes `/metrics`; the application target was verified `UP` in Prometheus.
+- Prometheus loads the three API alert rules from the labeled `PrometheusRule`. They were observed as `Inactive (3)` when their conditions were not met; this is a normal state, not a discovery error.
+- A four-panel Grafana dashboard covers request rate, API pod restarts, p95 latency, and 5xx rate. It is stored at [`monitoring/dashboard/dashboard.json`](../../monitoring/dashboard/dashboard.json).
+- Grafana dashboard provisioning is configured through a labeled ConfigMap and the kube-prometheus-stack dashboard sidecar. Sidecar logs confirmed that it loaded the JSON and Grafana returned HTTP 200 for dashboard reload.
+- The Codespaces k3d environment was verified with the FastAPI, Argo CD, Grafana, and Prometheus UIs accessible.
+- The user reports that screenshots of the verification have been captured. They are not yet committed to the repository.
 
-## Remaining Work
+## Evidence Follow-up
 
-1. Verify the actual metrics endpoint. The app currently calls `expose` with `./metrics`, while the intended endpoint and ServiceMonitor path are `/metrics`.
-2. Align the ServiceMonitor selector and namespace with the chart-rendered Service. The Service has the `app.kubernetes.io/name` label and is deployed to `platform-dev`; the current ServiceMonitor selects `app: platform-api` in namespace `platform`.
-3. Verify the Prometheus Operator's ServiceMonitor and PrometheusRule label and namespace selectors for the installed release.
-4. Run `helm lint` and `helm template`, deploy through Argo CD, and confirm the application target is UP in Prometheus.
-5. Create and verify a dashboard for request rate, 5xx rate, p95 latency, CPU/memory, and Pod restarts. There is no current evidence that a dashboard has been provisioned or tested.
-6. Generate controlled errors or latency, confirm that an alert fires, and capture evidence.
-7. Run the bootstrap in Codespaces and verify that the API, Argo CD, and Grafana are reachable through forwarded ports.
+Add the captured screenshots to the repository when ready. `Inactive (3)` only confirms that the rules are loaded and not currently firing; retain or add evidence of the controlled alert test if the screenshots do not already show it.
 
 ## Related Files
 

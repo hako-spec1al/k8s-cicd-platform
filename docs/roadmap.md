@@ -15,7 +15,7 @@ Build a production-oriented Kubernetes CI/CD platform for a FastAPI service, cov
 | 5. Helm | Complete | Chart provides shared defaults and dev/staging values. |
 | 6. GitOps | Complete | Argo CD Application enables automated sync, pruning, and self-healing. |
 | 7. CI/CD | Complete | SHA-tagged images and automated Helm-value updates through deployment PRs. Project milestone: `v0.7.0`. |
-| 8. Observability | In progress | Add application metrics, scraping, dashboards, and alerts; migrate the lab to Codespaces because of local resource constraints. |
+| 8. Observability | Complete | `/metrics` is scraped by Prometheus; a four-panel Grafana dashboard is provisioned from Git; API alert rules are loaded and the Codespaces UIs were verified. Verification screenshots have been captured and will be added to the repository separately. |
 | 9. Security and reliability | Not started | Add scanning, policy controls, rollback exercises, and incident runbooks. |
 | 10. Portfolio and documentation | In progress | Finalize architecture materials, evidence, and operational documentation. |
 

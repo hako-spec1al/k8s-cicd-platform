@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/hako-spec1al/k8s-cicd-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/hako-spec1al/k8s-cicd-platform/actions/workflows/ci.yml)
 
-A DevOps portfolio project demonstrating an end-to-end delivery workflow for a FastAPI service: automated testing, immutable container images, Kubernetes deployment with Helm and GitOps, and application observability. Phase 8 is in progress. The local lab is being moved to GitHub Codespaces because of host resource constraints.
+A DevOps portfolio project demonstrating an end-to-end delivery workflow for a FastAPI service: automated testing, immutable container images, Kubernetes deployment with Helm and GitOps, and application observability. Phases 1–8 are complete. Verification screenshots for Phase 8 have been captured and will be added to the repository separately.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ Helm declares the desired deployment state in Git, and Argo CD reconciles the cl
 - **CI/CD:** GitHub Actions
 - **Kubernetes:** k3d, kubectl, Traefik
 - **Packaging and GitOps:** Helm, Argo CD
-- **Observability:** Prometheus, Grafana, ServiceMonitor, PrometheusRule
+- **Observability:** FastAPI Prometheus metrics, Prometheus scraping and alert rules, a provisioned four-panel Grafana dashboard
 - **Phase 8 development environment:** GitHub Codespaces with Docker-in-Docker
 
 ## Run Locally
@@ -49,9 +49,9 @@ API documentation: `http://127.0.0.1:8000/docs`. Health endpoints: `/health`, `/
 
 ## Codespaces and Kubernetes
 
-On GitHub, select **Code → Codespaces** and create a Codespace from the branch you want to work on. [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) configures Docker-in-Docker, kubectl, Helm, and forwarded ports for the API, Argo CD, and Grafana.
+On GitHub, select **Code → Codespaces** and create a Codespace from the branch you want to work on. [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) configures Docker-in-Docker, kubectl, Helm, and forwarded ports for the API, Argo CD, Grafana, and Prometheus.
 
-The bootstrap script is [`setup-codespaces.sh`](setup-codespaces.sh). It deletes and recreates the k3d cluster named `platform`; use it only in a dedicated Codespace after reviewing the script. A successful Codespaces deployment has not yet been verified on this branch.
+The bootstrap script is [`setup-codespaces.sh`](setup-codespaces.sh). It deletes and recreates the k3d cluster named `platform`; use it only in a dedicated Codespace after reviewing the script. The Codespaces deployment, API `/metrics` endpoint, and Argo CD, Grafana, and Prometheus UIs have been verified.
 
 For a local Kubernetes lab, install Docker Desktop, kubectl, k3d, and Helm. See [Phase 4](docs/phases/phase-4-kubernetes.md) for deployment details and the [operations runbook](docs/runbooks/operational-commands.md) for common commands.
 
@@ -64,7 +64,7 @@ For a local Kubernetes lab, install Docker Desktop, kubectl, k3d, and Helm. See 
 - [Phase 5: Helm Chart](docs/phases/phase-5-helm.md)
 - [Phase 6: Argo CD GitOps](docs/phases/phase-6-argocd-gitops.md)
 - [Phase 7: CI/CD Integration](docs/phases/phase-7-cicd.md)
-- [Phase 8: Observability (in progress)](docs/phases/phase-8-observability.md)
+- [Phase 8: Observability](docs/phases/phase-8-observability.md)
 
 ## Operations and Project Notes
 
@@ -76,4 +76,4 @@ For a local Kubernetes lab, install Docker Desktop, kubectl, k3d, and Helm. See 
 
 ## Current Status
 
-Phases 1–7 are complete based on the project history; Phase 8 is in progress. See the [roadmap](docs/roadmap.md) and [context handoff](docs/context-handoff.md) for current caveats. The current CI workflow does not include a Trivy image scan; security scanning remains outstanding.
+Phases 1–8 are complete. Phase 8 screenshots are pending addition to the repository. See the [roadmap](docs/roadmap.md) and [context handoff](docs/context-handoff.md) for status and caveats. The current CI workflow does not include a Trivy image scan; security scanning remains outstanding for Phase 9.

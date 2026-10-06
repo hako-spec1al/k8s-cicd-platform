@@ -12,4 +12,4 @@ Make Git the declarative source of truth and use Argo CD to synchronize the Helm
 
 The expected Application state is `Synced` and `Healthy`. Git changes should reconcile to the cluster, and Argo CD should recreate resources that are manually deleted.
 
-The Application currently targets the `phase-8-observability` branch. After that branch is merged, update `targetRevision` to the deployment branch (typically `main`) or confirm the intended branch strategy.
+The Application currently targets `phase-8-observability` for Codespaces verification. When Phase 8 is merged into `main` and `main` becomes the deployment source of truth, update `targetRevision` to `main` through Git so Argo CD follows the intended branch.

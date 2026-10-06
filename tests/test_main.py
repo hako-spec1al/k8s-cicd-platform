@@ -25,3 +25,10 @@ def test_version() -> None:
 
     assert response.status_code == 200
     assert response.json()["version"] == "dev"
+
+
+def test_metrics() -> None:
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/plain")

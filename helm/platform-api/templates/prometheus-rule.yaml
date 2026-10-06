@@ -1,0 +1,38 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-api-alerts
+  namespace: monitoring
+  labels: 
+    release: monitoring
+    app.kubernetes.io/name: platform-api
+spec:
+  groups:
+    - name: platform-api.rules
+      rules:
+        - alert: PlatformApiHigh5xxRate
+          expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (job) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High 5xx rate on platform-api"
+            description: "The app is returning too many 5xx responses."
+
+        - alert: PlatformApiHighLatency
+          expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High latency on platform-api"
+            description: "95th percentile latency is above 1 second."
+
+        - alert: PlatformApiPodCrashLoop
+          expr: increase(kube_pod_container_status_restarts_total[10m]) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod restart detected"
+            description: "The application pod has restarted recently."

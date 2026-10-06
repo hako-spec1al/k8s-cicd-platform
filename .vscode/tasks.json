@@ -1,0 +1,117 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Port-forward: API 8000",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "kubectl -n platform-dev wait --for=condition=Ready pods -l app.kubernetes.io/instance=platform-api-dev --timeout=300s && exec kubectl -n platform-dev port-forward --address 0.0.0.0 svc/platform-api-dev-platform-api 8000:8000"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "port-forward",
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Forwarding from ",
+                    "endsPattern": "^error:"
+                }
+            }
+        },
+        {
+            "label": "Port-forward: Grafana 3000",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "kubectl -n monitoring rollout status deployment/monitoring-grafana --timeout=300s && exec kubectl -n monitoring port-forward --address 0.0.0.0 svc/monitoring-grafana 3000:80"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "port-forward",
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Forwarding from ",
+                    "endsPattern": "^error:"
+                }
+            }
+        },
+        {
+            "label": "Port-forward: Argo CD 8082",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "kubectl -n argocd rollout status deployment/argocd-server --timeout=300s && exec kubectl -n argocd port-forward --address 0.0.0.0 svc/argocd-server 8082:443"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "port-forward",
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Forwarding from ",
+                    "endsPattern": "^error:"
+                }
+            }
+        },
+        {
+            "label": "Port-forward: Prometheus 9090",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-lc",
+                "kubectl -n monitoring rollout status statefulset/prometheus-monitoring-kube-prometheus-prometheus --timeout=300s && exec kubectl -n monitoring port-forward --address 0.0.0.0 svc/monitoring-kube-prometheus-prometheus 9090:9090"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "port-forward",
+                "pattern": [
+                    {
+                        "regexp": "^error: (.*)$",
+                        "file": "port-forward",
+                        "message": 1
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Forwarding from ",
+                    "endsPattern": "^error:"
+                }
+            }
+        },
+        {
+            "label": "Port-forward: All services (8000, 3000, 8082, 9090)",
+            "dependsOn": [
+                "Port-forward: API 8000",
+                "Port-forward: Grafana 3000",
+                "Port-forward: Argo CD 8082",
+                "Port-forward: Prometheus 9090"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": [],
+            "runOptions": { "runOn": "folderOpen" }
+        }
+    ]
+}

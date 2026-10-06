@@ -1,165 +1,79 @@
-# Production-like Kubernetes CI/CD Platform
+# Kubernetes CI/CD Platform
 
 [![CI](https://github.com/hako-spec1al/k8s-cicd-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/hako-spec1al/k8s-cicd-platform/actions/workflows/ci.yml)
 
-## Project overview
+A DevOps portfolio project demonstrating an end-to-end delivery workflow for a FastAPI service: automated testing, immutable container images, Kubernetes deployment with Helm and GitOps, and application observability. Phases 1–8 are complete. Verification screenshots for Phase 8 have been captured and will be added to the repository separately.
 
-Small FastAPI service used to demonstrate a production-like delivery path:
+## Architecture
 
-`code -> tests -> Docker image -> Kubernetes -> observability`
-
-Current architecture:
-
-- FastAPI API with `/health`, `/ready`, and `/version`
-- Docker runtime with a non-root `appuser`
-- GitHub Actions CI for pull requests and pushes to `main`
-- Kubernetes manifests for local deployment with probes, resources, and rolling updates
-
-## Phase 1: API foundation
-
-- Added the REST endpoints `/health`, `/ready`, and `/version`.
-- Added `APP_VERSION` runtime configuration.
-- Added pytest unit tests.
-
-## Phase 2: Dockerization
-
-- Built image `k8s-cicd-platform:v0.2.0` successfully.
-- Runs as non-root user `appuser` and exposes port `8000`.
-- Verified all API endpoints through the published container port.
-
-Build the image:
-
-```powershell
-docker build -t k8s-cicd-platform:v0.2.0 .
+```mermaid
+flowchart LR
+    Dev[Code change] --> CI[GitHub Actions: pytest]
+    CI --> Image[Build image with commit SHA]
+    Image --> GHCR[GitHub Container Registry]
+    CI --> PR[Deployment pull request]
+    PR --> Git[Helm values in Git]
+    Git --> Argo[Argo CD]
+    Argo --> K8s[Kubernetes: k3d]
+    K8s --> API[FastAPI]
+    API --> Prom[Prometheus]
+    K8s --> Prom
+    Prom --> Grafana[Grafana]
 ```
 
-Run the container:
+Helm declares the desired deployment state in Git, and Argo CD reconciles the cluster against it. Images use commit-SHA tags to support traceability from a deployment back to its source revision.
 
-```powershell
-docker run --rm -p 8000:8000 -e APP_VERSION=v0.2.0 k8s-cicd-platform:v0.2.0
-```
+## Technology Stack
 
-Verify the containerized API:
+- **Application:** Python 3.11, FastAPI, pytest
+- **Containerization:** Docker, GitHub Container Registry (GHCR)
+- **CI/CD:** GitHub Actions
+- **Kubernetes:** k3d, kubectl, Traefik
+- **Packaging and GitOps:** Helm, Argo CD
+- **Observability:** FastAPI Prometheus metrics, Prometheus scraping and alert rules, a provisioned four-panel Grafana dashboard
+- **Phase 8 development environment:** GitHub Codespaces with Docker-in-Docker
 
-```powershell
-Invoke-RestMethod http://localhost:8000/health
-Invoke-RestMethod http://localhost:8000/ready
-Invoke-RestMethod http://localhost:8000/version
-```
+## Run Locally
 
-## Phase 3: CI
-
-- Added GitHub Actions workflow for pull requests and pushes to `main`.
-- Dependency installation and pytest run successfully in CI.
-- Evidence: CI completed with `3 passed`; release tag `v0.3.0` was created on `main`.
-
-## Phase 4: Local Kubernetes deployment
-
-### Tools
-
-- Docker Desktop with the Linux container engine
-- `kubectl` for Kubernetes administration
-- `k3d` for running k3s inside Docker
-- k3d's built-in Traefik ingress controller
-
-Install the Kubernetes tools on Windows with WinGet:
-
-```powershell
-winget install --id Kubernetes.kubectl --exact
-winget install --id k3d.k3d --exact
-```
-
-Restart PowerShell after installation, then verify:
-
-```powershell
-docker version
-kubectl version --client
-k3d version
-```
-
-### Deploy locally
-
-The manifest at [`k8s/platform-api.yaml`](k8s/platform-api.yaml) defines the `platform` Namespace, ConfigMap, sample Secret, Deployment, Service, and Ingress. The Deployment has two replicas, HTTP readiness/liveness probes, resource requests/limits, a rolling update strategy, and non-root security settings.
-
-Build and create a k3d cluster with Traefik exposed on `localhost:8080`:
-
-```powershell
-docker build -t k8s-cicd-platform:v0.4.0 .
-k3d cluster create platform --agents 1 -p "8080:80@loadbalancer"
-k3d image import k8s-cicd-platform:v0.4.0 -c platform
-kubectl config use-context k3d-platform
-```
-
-On Windows, if the generated kubeconfig uses an unreachable `host.docker.internal` API address, replace it with the published localhost port:
-
-```powershell
-$apiPort = ((docker port k3d-platform-serverlb 6443/tcp) -split ":")[-1].Trim()
-kubectl config set-cluster k3d-platform --server="https://127.0.0.1:$apiPort"
-```
-
-Apply and verify the resources:
-
-```powershell
-kubectl apply -f k8s/platform-api.yaml
-kubectl -n platform rollout status deployment/platform-api --timeout=180s
-kubectl -n platform get pods,svc,ingress -o wide
-```
-
-Verify the API through the Service:
-
-```powershell
-kubectl -n platform port-forward svc/platform-api 8000:8000
-Invoke-RestMethod http://127.0.0.1:8000/health
-Invoke-RestMethod http://127.0.0.1:8000/ready
-Invoke-RestMethod http://127.0.0.1:8000/version
-```
-
-Verify the Ingress through Traefik:
-
-```powershell
-$headers = @{ Host = "platform.local" }
-Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8080/health -Headers $headers
-```
-
-### Phase 4 verification evidence
-
-- [x] k3d cluster created with one server and one agent.
-- [x] Both application Pods reached `Running` and `Ready`.
-- [x] Deployment rollout completed successfully.
-- [x] Service returned `/health`, `/ready`, and `/version` successfully.
-- [x] Traefik Ingress returned HTTP `200` for `platform.local/health`.
-- [x] Rolling update from image `v0.4.0` to `v0.4.1` completed successfully with two Ready replicas.
-- [x] Ten consecutive health requests returned HTTP `200` after the rollout.
-- [x] Deleting a Pod caused the Deployment to create a replacement Pod, and the API remained healthy.
-- [x] Terminating the container process caused Kubernetes to restart it; `RESTARTS=1` was observed.
-
-The local cluster can be removed after verification:
-
-```powershell
-k3d cluster delete platform
-```
-
-## Documentation
-
-- [Phase 5: Helm Chart Standardization](docs/phase-5-helm.md)
-
-## Run locally
+Prerequisite: Python 3.11 or later.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-pytest
+python -m pip install -r requirements.txt
+python -m pytest -q
 uvicorn app.main:app --reload
 ```
 
-Open `http://localhost:8000/docs` for the API documentation.
+API documentation: `http://127.0.0.1:8000/docs`. Health endpoints: `/health`, `/ready`, and `/version`.
 
-## Verification evidence
+## Codespaces and Kubernetes
 
-- [x] Phase 1 tests: `3 passed`.
-      ![alt text](images/pytest_result.png)
-- [x] Phase 2 image: `k8s-cicd-platform:v0.2.0`.
-      ![alt text](images/docker_image.png)
-- [x] Phase 3 CI: `3 passed`, released as `v0.3.0`.
-      ![alt text](images/phase3_CI.png)
+On GitHub, select **Code → Codespaces** and create a Codespace from the branch you want to work on. [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) configures Docker-in-Docker, kubectl, Helm, and forwarded ports for the API, Argo CD, Grafana, and Prometheus.
+
+The bootstrap script is [`setup-codespaces.sh`](setup-codespaces.sh). It deletes and recreates the k3d cluster named `platform`; use it only in a dedicated Codespace after reviewing the script. The Codespaces deployment, API `/metrics` endpoint, and Argo CD, Grafana, and Prometheus UIs have been verified.
+
+For a local Kubernetes lab, install Docker Desktop, kubectl, k3d, and Helm. See [Phase 4](docs/phases/phase-4-kubernetes.md) for deployment details and the [operations runbook](docs/runbooks/operational-commands.md) for common commands.
+
+## Project Phases
+
+- [Phase 1: API Foundation](docs/phases/phase-1-api-foundation.md)
+- [Phase 2: Containerization](docs/phases/phase-2-containerization.md)
+- [Phase 3: CI Pipeline](docs/phases/phase-3-ci-pipeline.md)
+- [Phase 4: Kubernetes Deployment](docs/phases/phase-4-kubernetes.md)
+- [Phase 5: Helm Chart](docs/phases/phase-5-helm.md)
+- [Phase 6: Argo CD GitOps](docs/phases/phase-6-argocd-gitops.md)
+- [Phase 7: CI/CD Integration](docs/phases/phase-7-cicd.md)
+- [Phase 8: Observability](docs/phases/phase-8-observability.md)
+
+## Operations and Project Notes
+
+- [Project roadmap](docs/roadmap.md)
+- [Context handoff](docs/context-handoff.md)
+- [Operations runbook](docs/runbooks/operational-commands.md)
+- [Incident report: local resource starvation](docs/incidents/2026-09-resource-starvation.md)
+- [Rollout availability check script](docs/scripts/verify-zero-downtime.ps1)
+
+## Current Status
+
+Phases 1–8 are complete. Phase 8 screenshots are pending addition to the repository. See the [roadmap](docs/roadmap.md) and [context handoff](docs/context-handoff.md) for status and caveats. The current CI workflow does not include a Trivy image scan; security scanning remains outstanding for Phase 9.

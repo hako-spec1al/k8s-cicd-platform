@@ -5,9 +5,9 @@ Last updated: 2026-10-06
 ## Repository and Branch
 
 - Repository: `k8s-cicd-platform`.
-- Active branch: `phase-8-observability`.
+- Active branch at the Phase 9 baseline: `main`.
 - Do not merge directly into `main`.
-- Argo CD Application `platform-api-dev` tracks `phase-8-observability` and deploys to `platform-dev`.
+- Argo CD Application `platform-api-dev` targets `main` and deploys to `platform-dev`. At baseline, it was `Synced` and `Healthy` at commit `97b74a3b57c06439e7185aa8673e76f8c00054de`.
 
 ## Verified
 
@@ -25,10 +25,19 @@ Last updated: 2026-10-06
 - The four port-forward tasks work when run manually. If automatic startup is revisited, validate the current `.vscode/tasks.json` problem matcher; its `file` value is a string rather than a capture-group index.
 - Port-forward automation is a Codespaces convenience follow-up and does not block Phase 8 completion.
 
-## Next Phase
+## Phase 9 Baseline
 
-1. Add the captured Phase 8 screenshots to the repository.
-2. Begin Phase 9 security and reliability work, starting with Trivy image scanning; scanning is not currently implemented in CI.
+- Phase 9 is in progress. Baseline evidence is recorded in [`docs/phases/phase-9-security-reliability.md`](phases/phase-9-security-reliability.md).
+- Gitleaks 8.30.1 scanned 28 commits and reported six false positives: Grafana query UUID identifiers at three dashboard locations repeated across two commits. No confirmed credential was found.
+- Trivy 0.75.0 scanned a local image built from the baseline commit. It reported 49 HIGH package-vulnerability records across 13 unique CVEs and no CRITICAL findings. Trivy and Gitleaks are not yet CI gates.
+- The earlier note that Argo CD tracks `phase-8-observability` was stale; the live Application targets `main`.
+- Phase 8 screenshots remain a separate documentation follow-up.
+
+## Next Phase 9 Work
+
+1. Review and remediate the baseline Trivy findings.
+2. Add only Gitleaks and Trivy HIGH/CRITICAL scanning to CI, narrowly handling the confirmed Grafana UUID false positives.
+3. Review RBAC and NetworkPolicy, then test and document rollout recovery and rollback.
 
 ## Operational Cautions
 

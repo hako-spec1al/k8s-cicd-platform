@@ -6,7 +6,7 @@ Run automated checks on code changes and publish a container image after changes
 
 ## Implementation
 
-The current workflow runs on pull requests and pushes to `main`:
+The current workflow runs on pull requests and pushes to `main` or `phase-8-observability`:
 
 1. Checks out the source and sets up Python 3.11.
 2. Installs dependencies from `requirements.txt`.

@@ -16,7 +16,7 @@ Build a production-oriented Kubernetes CI/CD platform for a FastAPI service, cov
 | 6. GitOps | Complete | Argo CD Application enables automated sync, pruning, and self-healing. |
 | 7. CI/CD | Complete | SHA-tagged images and automated Helm-value updates through deployment PRs. Project milestone: `v0.7.0`. |
 | 8. Observability | Complete | `/metrics` is scraped by Prometheus; a four-panel Grafana dashboard is provisioned from Git; API alert rules are loaded and the Codespaces UIs were verified. Verification screenshots have been captured and will be added to the repository separately. |
-| 9. Security and reliability | Not started | Add scanning, policy controls, rollback exercises, and incident runbooks. |
+| 9. Security and reliability | In progress | Baseline recorded: 6 Gitleaks false positives (Grafana query UUIDs) and 49 HIGH Trivy package-vulnerability records across 13 CVEs; no CRITICAL findings. CI gates and remediation remain outstanding. |
 | 10. Portfolio and documentation | In progress | Finalize architecture materials, evidence, and operational documentation. |
 
 ## Definition of Done
@@ -29,4 +29,4 @@ Build a production-oriented Kubernetes CI/CD platform for a FastAPI service, cov
 
 ## Scope Notes
 
-Completion status reflects the implementation and verification history for each phase; configuration may continue to evolve on feature branches. In particular, the current CI workflow does not include Trivy even though image scanning was part of the original plan. Do not claim image scanning is implemented until that workflow step is added and verified.
+Completion status reflects the implementation and verification history for each phase; configuration may continue to evolve on feature branches. A local Trivy baseline has been recorded for Phase 9, but the current CI workflow does not include Trivy. Do not claim CI image scanning is implemented until that workflow step is added and verified.

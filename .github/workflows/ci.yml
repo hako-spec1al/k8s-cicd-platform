@@ -39,7 +39,7 @@ jobs:
               run: python -m pytest -q
     build-and-push:
         name: Build and push image
-        needs: test
+        needs: [test, gitleaks]
         if: github.event_name == 'push'
         runs-on: ubuntu-latest
 
@@ -126,3 +126,16 @@ jobs:
                   labels: |
                       deployment
                       automated
+    gitleaks:
+        name: Secret scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout source
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Run gitleaks
+              uses: gitleaks/gitleaks-action@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -63,3 +63,4 @@ trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 \
 - [Helm default values](../../helm/platform-api/values.yaml)
 - [Standalone Kubernetes deployment](../../k8s/20-deployment.yaml)
 - [Operations runbook](../runbooks/operational-commands.md)
+- [Ghcr build auth incident](../incidents/2026-09-resource-starvation.md2026-10-ghcr-build-auth-403.md)

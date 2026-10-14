@@ -1,3 +1,4 @@
 helm/**/templates/*.yaml
 *.tpl
 *.devcontainer
+ci.yml

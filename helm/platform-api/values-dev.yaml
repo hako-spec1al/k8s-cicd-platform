@@ -1,8 +1,8 @@
 replicaCount: 1
-appVersion: sha-eb91e433e6f9fa7e3c050a31c665f02c5759b835
+appVersion: sha-87fef222e860de56b911ece9fc2cdcb583acdedb
 image:
   repository: ghcr.io/hako-spec1al/k8s-cicd-platform
-  tag: sha-eb91e433e6f9fa7e3c050a31c665f02c5759b835
+  tag: sha-87fef222e860de56b911ece9fc2cdcb583acdedb
 #keep override
 ingress:
   host: platform-dev.local

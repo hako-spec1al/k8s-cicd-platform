@@ -15,7 +15,6 @@
                 "pattern": [
                     {
                         "regexp": "^error: (.*)$",
-                        "file": "port-forward",
                         "message": 1
                     }
                 ],
@@ -40,7 +39,6 @@
                 "pattern": [
                     {
                         "regexp": "^error: (.*)$",
-                        "file": "port-forward",
                         "message": 1
                     }
                 ],
@@ -65,7 +63,6 @@
                 "pattern": [
                     {
                         "regexp": "^error: (.*)$",
-                        "file": "port-forward",
                         "message": 1
                     }
                 ],
@@ -90,7 +87,6 @@
                 "pattern": [
                     {
                         "regexp": "^error: (.*)$",
-                        "file": "port-forward",
                         "message": 1
                     }
                 ],
@@ -110,8 +106,9 @@
                 "Port-forward: Prometheus 9090"
             ],
             "dependsOrder": "parallel",
-            "problemMatcher": [],
-            "runOptions": { "runOn": "folderOpen" }
+            "problemMatcher": []
+            //"runOptions": { "runOn": "folderOpen" }
+            // Uncomment the above line to automatically start port-forwarding when the workspace is opened
         }
     ]
 }

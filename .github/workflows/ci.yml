@@ -39,8 +39,8 @@ jobs:
               run: python -m pytest -q
     build-and-push:
         name: Build and push image
-        needs: test
-        if: github.event_name == 'push'
+        needs: [test, gitleaks]
+        # if: github.event_name == 'push'
         runs-on: ubuntu-latest
 
         permissions:
@@ -50,13 +50,6 @@ jobs:
         steps:
             - name: Checkout source
               uses: actions/checkout@v4
-
-            - name: Log in to GHCR
-              uses: docker/login-action@v3
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
@@ -69,15 +62,40 @@ jobs:
                   tags: |
                       type=sha, format=long, prefix=sha-
 
-            - name: Build and push image
+            - name: Build image locally
               uses: docker/build-push-action@v6
               with:
                   context: .
-                  push: true
+                  load: true
+                  push: false
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
                   cache-to: type=gha, mode=max
+
+            - name: Scan image with Trivy
+              uses: aquasecurity/trivy-action@master
+              with:
+                  image-ref: ${{ steps.meta.outputs.tags }}
+                  format: table
+                  exit-code: '1'
+                  ignore-unfixed: true
+                  scanners: vuln
+                  severity: CRITICAL,HIGH
+
+            - name: Log in to GHCR
+              if: github.event_name == 'push'
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Push scanned image
+              if: github.event_name == 'push'
+              env:
+                  IMAGE_REF: ${{ steps.meta.outputs.tags }}
+              run: docker push "$IMAGE_REF"
 
             - name: Export image tag
               run: |
@@ -86,6 +104,7 @@ jobs:
     create-deployment-pr:
         name: Create deloyment PR
         needs: build-and-push
+        if: github.event_name == 'push'
         runs-on: ubuntu-latest
 
         permissions:
@@ -126,3 +145,16 @@ jobs:
                   labels: |
                       deployment
                       automated
+    gitleaks:
+        name: Secret scan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout source
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Run gitleaks
+              uses: gitleaks/gitleaks-action@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

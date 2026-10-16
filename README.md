@@ -65,6 +65,7 @@ For a local Kubernetes lab, install Docker Desktop, kubectl, k3d, and Helm. See 
 - [Phase 6: Argo CD GitOps](docs/phases/phase-6-argocd-gitops.md)
 - [Phase 7: CI/CD Integration](docs/phases/phase-7-cicd.md)
 - [Phase 8: Observability](docs/phases/phase-8-observability.md)
+- [Phase 9: Security and Reliability](docs/phases/phase-9-security-reliability.md)
 
 ## Operations and Project Notes
 
@@ -76,4 +77,4 @@ For a local Kubernetes lab, install Docker Desktop, kubectl, k3d, and Helm. See 
 
 ## Current Status
 
-Phases 1–8 are complete. Phase 8 screenshots are pending addition to the repository. See the [roadmap](docs/roadmap.md) and [context handoff](docs/context-handoff.md) for status and caveats. The current CI workflow does not include a Trivy image scan; security scanning remains outstanding for Phase 9.
+Phases 1–8 are complete; Phase 9 is in progress. Gitleaks and the blocking Trivy image scan, along with Python package vulnerability remediation, have passed checks in the unmerged Phase 9 PR. Post-merge image publication, Kubernetes policy review, and recovery testing remain. Phase 8 screenshots are pending addition to the repository. See the [roadmap](docs/roadmap.md), [Phase 9 notes](docs/phases/phase-9-security-reliability.md), and [context handoff](docs/context-handoff.md) for status and caveats.

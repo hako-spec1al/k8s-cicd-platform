@@ -10,13 +10,13 @@ Build a production-oriented Kubernetes CI/CD platform for a FastAPI service, cov
 | --- | --- | --- |
 | 1. API foundation | Complete | FastAPI provides `/health`, `/ready`, `/version`, and unit tests. |
 | 2. Containerization | Complete | Python 3.11 image runs as a non-root user. |
-| 3. CI | Complete | GitHub Actions runs tests, builds and pushes to GHCR, and opens a deployment PR. Trivy scanning is not present in the current workflow and remains a follow-up. |
+| 3. CI | Complete | GitHub Actions runs tests, builds and pushes to GHCR, and opens a deployment PR. Phase 9 adds secret and image-vulnerability checks; the PR checks have passed, with post-merge publication still to be verified. |
 | 4. Kubernetes | Complete | Workload runs on k3d with probes, resource limits, Ingress, and a verified rolling update. |
 | 5. Helm | Complete | Chart provides shared defaults and dev/staging values. |
 | 6. GitOps | Complete | Argo CD Application enables automated sync, pruning, and self-healing. |
 | 7. CI/CD | Complete | SHA-tagged images and automated Helm-value updates through deployment PRs. Project milestone: `v0.7.0`. |
 | 8. Observability | Complete | `/metrics` is scraped by Prometheus; a four-panel Grafana dashboard is provisioned from Git; API alert rules are loaded and the Codespaces UIs were verified. Verification screenshots have been captured and will be added to the repository separately. |
-| 9. Security and reliability | In progress | Baseline recorded: 6 Gitleaks false positives (Grafana query UUIDs) and 49 HIGH Trivy package-vulnerability records across 13 CVEs; no CRITICAL findings. CI gates and remediation remain outstanding. |
+| 9. Security and reliability | In progress | Baseline recorded: 6 narrow Gitleaks false positives and 49 HIGH Trivy package-vulnerability records across 13 CVEs. Phase 9 PR adds Gitleaks and a blocking Trivy gate; Python package remediation and PR checks have passed. PR is not merged; post-merge verification, RBAC/NetworkPolicy review, and recovery testing remain. |
 | 10. Portfolio and documentation | In progress | Finalize architecture materials, evidence, and operational documentation. |
 
 ## Definition of Done
@@ -29,4 +29,4 @@ Build a production-oriented Kubernetes CI/CD platform for a FastAPI service, cov
 
 ## Scope Notes
 
-Completion status reflects the implementation and verification history for each phase; configuration may continue to evolve on feature branches. A local Trivy baseline has been recorded for Phase 9, but the current CI workflow does not include Trivy. Do not claim CI image scanning is implemented until that workflow step is added and verified.
+Completion status reflects the implementation and verification history for each phase; configuration may continue to evolve on feature branches. Phase 9 CI scanning has passed in the unmerged PR; verify the push-and-publish path on `main` after merge before considering that workflow path fully validated.

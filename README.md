@@ -77,4 +77,4 @@ For a local Kubernetes lab, install Docker Desktop, kubectl, k3d, and Helm. See 
 
 ## Current Status
 
-Phases 1–8 are complete; Phase 9 baseline work is in progress. Phase 8 screenshots are pending addition to the repository. A local Gitleaks and Trivy baseline is documented, but CI security gates and vulnerability remediation remain outstanding. See the [roadmap](docs/roadmap.md), [Phase 9 notes](docs/phases/phase-9-security-reliability.md), and [context handoff](docs/context-handoff.md) for status and caveats.
+Phases 1–8 are complete; Phase 9 is in progress. Gitleaks and the blocking Trivy image scan, along with Python package vulnerability remediation, have passed checks in the unmerged Phase 9 PR. Post-merge image publication, Kubernetes policy review, and recovery testing remain. Phase 8 screenshots are pending addition to the repository. See the [roadmap](docs/roadmap.md), [Phase 9 notes](docs/phases/phase-9-security-reliability.md), and [context handoff](docs/context-handoff.md) for status and caveats.

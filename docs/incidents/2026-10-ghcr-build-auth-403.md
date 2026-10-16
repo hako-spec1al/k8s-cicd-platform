@@ -26,8 +26,10 @@ in to GHCR and pushes the scanned image only afterward, on push events.
 
 ## Verification
 
-Record the successful workflow run and confirm that a pull request
-does not log in to or push an image to GHCR.
+The Phase 9 pull request subsequently passed the local image build and
+Trivy scan after `push: false` was set on the build step. The pull request
+does not log in to or push an image to GHCR. The post-merge `main` push
+and GHCR publication path still requires verification.
 
 ## Prevention
 

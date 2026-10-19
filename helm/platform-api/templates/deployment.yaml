@@ -20,6 +20,9 @@ spec:
       labels:
         {{- include "platform-api.selectorLabels" . | nindent 8 }}
     spec:
+      # Service account for the deployment
+      serviceAccountName: {{ include "platform-api.fullname" . }} 
+      automountServiceAccountToken: false 
       securityContext:
         runAsNonRoot: {{ .Values.securityContext.runAsNonRoot }}
         runAsUser: {{ .Values.securityContext.runAsUser }}

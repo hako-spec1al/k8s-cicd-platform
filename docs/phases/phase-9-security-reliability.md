@@ -1,6 +1,6 @@
 # Phase 9: Security and Reliability
 
-**Status:** In progress — CI security changes and Python package remediation have passed PR checks; the PR is not yet merged (2026-10-16).
+**Status:** In progress — CI security gate is complete; RBAC hardening and reliability verification remain (2026-10-19).
 
 ## Objective
 
@@ -10,7 +10,7 @@ Establish security and reliability controls for the existing CI/CD platform, inc
 
 - Repository revision: `main`, commit `97b74a3b57c06439e7185aa8673e76f8c00054de`; working tree was clean.
 - Deployment source: Argo CD `platform-api-dev` targets `main`, was `Synced` and `Healthy`, and reported the same revision. This resolves the stale `phase-8-observability` branch note in the context handoff.
-- Historical baseline: CI at the baseline revision ran tests and built/pushed SHA-tagged images without Gitleaks or Trivy. The Phase 9 branch now adds both scanners; its PR checks have passed, but post-merge behavior on `main` has not yet been verified.
+- Historical baseline: CI at the baseline revision ran tests and built/pushed SHA-tagged images without Gitleaks or Trivy. The Phase 9 changes were merged, and the user reports that the updated image was deployed to `main` and its new Pods are healthy. The main-branch workflow and cluster state have not been independently inspected in this session.
 
 ### Gitleaks
 
@@ -28,14 +28,14 @@ Establish security and reliability controls for the existing CI/CD platform, inc
 - Result: 49 package-vulnerability records across 13 unique CVEs, all `HIGH`; no `CRITICAL` findings. Five package-vulnerability records reported a fixed version.
 - Findings span Debian 13.7 packages in the `python:3.11-slim` image and Python dependencies, including Starlette, `jaraco.context`, and `wheel`.
 - Unique CVEs: `CVE-2025-62727`, `CVE-2025-69720`, `CVE-2026-16742`, `CVE-2026-23949`, `CVE-2026-24049`, `CVE-2026-48818`, `CVE-2026-54283`, `CVE-2026-54369`, `CVE-2026-76642`, `CVE-2026-78408`, `CVE-2026-78409`, `CVE-2026-78410`, and `CVE-2026-9538`.
-- This is the original baseline result, not the current image result. Subsequent remediation addressed vulnerable Python packages and pip-vendored packages; the updated PR image passed Trivy with the CI gate set to fail on HIGH/CRITICAL findings. See the [Python package vulnerability incident](../incidents/2026-10-python-package-vulnerabilities.md). The PR has not yet been merged, so the `main` push-and-publish path remains to be verified.
+- This is the original baseline result, not the current image result. Subsequent remediation addressed vulnerable Python packages and pip-vendored packages; the updated image passed Trivy with the CI gate set to fail on HIGH/CRITICAL findings. See the [Python package vulnerability incident](../incidents/2026-10-python-package-vulnerabilities.md). The user reports that the PR was merged and the new Pods are running; the main-branch push-and-publish workflow has not been independently verified here.
 
 ### Current CI controls
 
 - Gitleaks scans Git history, with only the confirmed Grafana UUID fingerprints ignored.
 - Trivy scans the locally built image for HIGH and CRITICAL vulnerabilities, ignores unfixed findings, and fails the job when matching findings are present.
 - The image is built locally without pushing, scanned, then logged in to GHCR and pushed only on push events after a successful scan.
-- The Phase 9 pull request checks have passed according to the latest reported run. Verify the checks again on the final PR commit and verify the push/publish path after merge.
+- The Phase 9 checks passed before merge, according to the reported run. The user reports successful merge and healthy new Pods. Confirm the main-branch push/publish run from GitHub Actions before treating that path as independently verified.
 
 ### Existing runtime controls
 
@@ -43,7 +43,16 @@ Establish security and reliability controls for the existing CI/CD platform, inc
 - The active Helm deployment renders non-root execution, `allowPrivilegeEscalation: false`, a read-only root filesystem, dropped Linux capabilities, readiness/liveness probes, resource requests/limits, and a rolling update with `maxUnavailable: 0` and `maxSurge: 1`.
 - Staging overrides resources; dev inherits the chart defaults.
 - The standalone Kubernetes deployment additionally specifies `seccompProfile: RuntimeDefault` and a startup probe, but Argo CD deploys the Helm chart. Keep the chart as the effective deployment source unless that setup changes.
-- No NetworkPolicy or dedicated Role/RoleBinding/ServiceAccount manifests were found in the tracked YAML files.
+
+### RBAC and ServiceAccount review
+
+- The active Argo CD application deploys `helm/platform-api` with `values-dev.yaml` into `platform-dev`.
+- The Helm Deployment template does not set `spec.template.spec.serviceAccountName`, and the chart has no ServiceAccount, Role, RoleBinding, ClusterRole, or ClusterRoleBinding templates. Kubernetes therefore uses the namespace's `default` ServiceAccount unless the live workload has been changed outside this chart.
+- The standalone `k8s/20-deployment.yaml` also does not set a ServiceAccount.
+- No Kubernetes API client usage was found in the application Python source. The API therefore has no identified need for Kubernetes API permissions.
+- Recommended least-privilege target: create a dedicated `platform-api` ServiceAccount in `platform-dev`, set `automountServiceAccountToken: false` on it (or on the Pod), and reference it from the Helm Deployment. Do not create a Role or RoleBinding unless a documented application feature later requires specific Kubernetes API access. This removes the unnecessary default token and grants no API permissions.
+- This is a repository configuration review, not a live-cluster authorization audit. Check the rendered/live Pod ServiceAccount and its effective permissions before and after applying the change.
+- No NetworkPolicy was found in tracked manifests; assess it separately against ingress and Prometheus scrape traffic.
 
 ## Baseline Commands
 
@@ -58,8 +67,8 @@ trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 \
 
 ## Next Work
 
-1. Review the Phase 9 PR, ensure all required checks pass on its latest commit, and merge through the repository's normal review process.
-2. Verify the workflow on `main`, including post-scan GHCR publication and the deployment PR behavior.
+1. Verify the main-branch workflow, including post-scan GHCR publication and the deployment PR behavior.
+2. Configure a dedicated ServiceAccount for the API with token automount disabled and no RBAC bindings; verify the rendered and live workload.
 3. Review least-privilege RBAC and add a scoped NetworkPolicy if compatible with the application and monitoring setup.
 4. Exercise rolling update, failure recovery, and rollback; document evidence in the runbook.
 

@@ -77,7 +77,7 @@ kubectl -n argocd rollout status deployment/argocd-repo-server --timeout=300s
 kubectl wait --for=condition=Established \
   crd/applications.argoproj.io --timeout=180s
 
-# 1. CÀI ĐẶT MONITORING TRƯỚC (Để tạo các CRD như ServiceMonitor, PrometheusRule)
+# 1. Install Prometheus first, so that the monitoring namespace exists before Argo CD tries to deploy the kube-prometheus-stack.
 helm repo add prometheus-community \
   https://prometheus-community.github.io/helm-charts \
   --force-update
@@ -99,7 +99,7 @@ kubectl create configmap platform-api-dashboard \
 kubectl label configmap platform-api-dashboard \
   --namespace monitoring grafana_dashboard=1 --overwrite
 
-# 2. SAU ĐÓ MỚI APPLY ARGO CD APPLICATION
+# 2. Install the platform-api application through Argo CD.
 kubectl apply -f argocd/application-platform-api.yaml
 
 echo "Bootstrap complete."

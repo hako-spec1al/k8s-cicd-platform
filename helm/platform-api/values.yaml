@@ -42,3 +42,6 @@ monitoring:
         path: /metrics
     alerts:
         enabled: true
+
+networkPolicy:
+    enabled: false

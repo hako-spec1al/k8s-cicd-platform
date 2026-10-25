@@ -1,6 +1,6 @@
 # Phase 9: Security and Reliability
 
-**Status:** In progress — CI security gate is complete; RBAC hardening and reliability verification remain (2026-10-19).
+**Status:** In progress — CI security gate and RBAC least privilege are complete; NetworkPolicy and reliability verification remain (2026-10-25).
 
 ## Objective
 
@@ -47,12 +47,19 @@ Establish security and reliability controls for the existing CI/CD platform, inc
 ### RBAC and ServiceAccount review
 
 - The active Argo CD application deploys `helm/platform-api` with `values-dev.yaml` into `platform-dev`.
-- The Helm Deployment template does not set `spec.template.spec.serviceAccountName`, and the chart has no ServiceAccount, Role, RoleBinding, ClusterRole, or ClusterRoleBinding templates. Kubernetes therefore uses the namespace's `default` ServiceAccount unless the live workload has been changed outside this chart.
-- The standalone `k8s/20-deployment.yaml` also does not set a ServiceAccount.
+- The user reports that GitOps RBAC hardening is complete: the API uses a dedicated ServiceAccount, its token is not mounted, and `kubectl auth can-i` checks deny the tested permissions as expected.
 - No Kubernetes API client usage was found in the application Python source. The API therefore has no identified need for Kubernetes API permissions.
-- Recommended least-privilege target: create a dedicated `platform-api` ServiceAccount in `platform-dev`, set `automountServiceAccountToken: false` on it (or on the Pod), and reference it from the Helm Deployment. Do not create a Role or RoleBinding unless a documented application feature later requires specific Kubernetes API access. This removes the unnecessary default token and grants no API permissions.
-- This is a repository configuration review, not a live-cluster authorization audit. Check the rendered/live Pod ServiceAccount and its effective permissions before and after applying the change.
-- No NetworkPolicy was found in tracked manifests; assess it separately against ingress and Prometheus scrape traffic.
+- The RBAC result is user-reported; this session has not independently inspected the merged Helm templates or live authorization state. Avoid adding Role/RoleBinding permissions unless a documented application feature requires specific Kubernetes API access.
+
+### NetworkPolicy review
+
+- No NetworkPolicy template or standalone NetworkPolicy manifest was found in the tracked repository files reviewed.
+- The Helm Deployment and Service share selector labels from `platform-api.selectorLabels`: `app.kubernetes.io/name` and `app.kubernetes.io/instance`. Use this helper to select only the API Pods in a chart template.
+- The ServiceMonitor is in `monitoring`, selects the API Service by `app.kubernetes.io/name: platform-api`, and scrapes its named `http` port at `/metrics`. This identifies the scrape target, but does not identify the Prometheus Pod labels needed as a NetworkPolicy source.
+- The chart sets `ingressClassName: traefik`, but the repository does not define the live ingress-controller namespace or Pod labels. Discover both from the cluster; do not assume Traefik is in `kube-system` or that a guessed label matches.
+- Proposed policy: isolate only the API Pods for ingress; allow TCP port 8000 from the verified ingress-controller Pods and Prometheus Pods; explicitly allow all egress temporarily. Confirm the cluster CNI enforces Kubernetes NetworkPolicy before treating the policy as an effective security boundary.
+- `setup-codespaces.sh` creates the k3d cluster without installing or configuring an explicit NetworkPolicy-enforcing CNI. Verify the active CNI and policy enforcement before rollout; a NetworkPolicy object by itself does not guarantee traffic is filtered.
+- Verify application readiness/liveness probes and Prometheus scraping after enabling the policy. Probe treatment can vary by network implementation.
 
 ## Baseline Commands
 
@@ -68,9 +75,8 @@ trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 0 \
 ## Next Work
 
 1. Verify the main-branch workflow, including post-scan GHCR publication and the deployment PR behavior.
-2. Configure a dedicated ServiceAccount for the API with token automount disabled and no RBAC bindings; verify the rendered and live workload.
-3. Review least-privilege RBAC and add a scoped NetworkPolicy if compatible with the application and monitoring setup.
-4. Exercise rolling update, failure recovery, and rollback; document evidence in the runbook.
+2. Add a scoped NetworkPolicy after confirming the live ingress-controller and Prometheus Pod labels and that the CNI enforces policies; verify ingress, probes, and metrics.
+3. Exercise rolling update, failure recovery, and rollback; document evidence in the runbook.
 
 ## Related Files
 
